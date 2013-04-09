@@ -24,17 +24,6 @@ usage()
   exit(1);
 }
 
-int
-ck_socket(int domain, int type, int protocol)
-{
-  int sock = socket(domain, type, protocol);
-  if (sock == -1) {
-    perror("socket");
-    exit(1);
-  }
-  return sock;
-}
-
 void
 cleanup()
 {
@@ -45,7 +34,6 @@ cleanup()
 int
 main(int argc, char ** argv)
 {
-  //int sock;
   char packet[PKTLEN];
   struct ether_header * eth = (struct ether_header *) packet;
   struct ether_arp * arp = (struct ether_arp *) (packet + sizeof(struct ether_header));
@@ -55,7 +43,10 @@ main(int argc, char ** argv)
     usage();
   }
 
-  sock = ck_socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
+  sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
+  if (sock < 0)
+    perror("socket"), exit(1);
+
   signal(SIGINT, cleanup);
 
   sscanf(argv[3], "%x:%x:%x:%x:%x:%x",  (unsigned int *) &arp->arp_sha[0],
